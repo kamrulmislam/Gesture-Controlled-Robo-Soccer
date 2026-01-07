@@ -1,0 +1,9 @@
+{
+    "hello": 0,
+    "have": 1,
+    "teacher": 2,
+    "table": 3,
+    "bed": 4,
+    "car": 5,
+    "unknown": 6
+}

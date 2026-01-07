@@ -1,0 +1,6 @@
+{
+    "frame_repetition_time_s": 0.1,
+    "chirp_repetition_time_s": 0.0004,   
+    "num_chirps": 64,                          
+    "tdm_mimo": 0                       
+}

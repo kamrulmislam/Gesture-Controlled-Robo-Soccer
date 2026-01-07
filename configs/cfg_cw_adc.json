@@ -1,0 +1,6 @@
+{
+    "sample_and_hold_time_ns": 50,
+    "oversampling_factor": 0,
+    "additional_subconversions": 0,
+    "double_msb_time": 0
+}
