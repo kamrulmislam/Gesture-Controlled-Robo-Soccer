@@ -1,8 +1,5 @@
 ### Demo Video 
-
-<video width="320" height="240" controls>
-  <source src="./Demo/RF-based-Gesture-Controlled-Robo-Soccer.mp4" type="video/mp4">
-</video>
+[![](./Demo/thumbnail.jpg.png)](./Demo/RF-based-Gesture-Controlled-Robo-Soccer.mp4)
 
 ---
 ---
@@ -46,3 +43,4 @@ If you face issues installing other packages from `requirements.txt`, install ma
     
 
     * Logout and Login. Verify if the user is added.
+
