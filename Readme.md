@@ -1,3 +1,12 @@
+### Demo Video 
+
+<video width="320" height="240" controls>
+  <source src="./Demo/RF-based-Gesture-Controlled-Robo-Soccer.mp4" type="video/mp4">
+</video>
+
+---
+---
+
 ### Install package for Infineon Radar
 
     cd inf-wheel
@@ -35,4 +44,5 @@ If you face issues installing other packages from `requirements.txt`, install ma
 
             sudo usermod -a -G dialout <username>
     
+
     * Logout and Login. Verify if the user is added.
