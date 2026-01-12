@@ -1,8 +1,4 @@
-### Demo Video 
-[![](./Demo/thumbnail.jpg.png)](./Demo/RF-based-Gesture-Controlled-Robo-Soccer.mp4)
-
----
----
+### [Demo Video](https://drive.google.com/file/d/1pj3zSUSC_zHJFYRHVPeqP0IefQaqFUqD/view?usp=sharing) 
 
 ### Install package for Infineon Radar
 
@@ -43,4 +39,5 @@ If you face issues installing other packages from `requirements.txt`, install ma
     
 
     * Logout and Login. Verify if the user is added.
+
 
