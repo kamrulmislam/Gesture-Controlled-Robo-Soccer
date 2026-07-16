@@ -77,6 +77,7 @@ def spectrogram(data, duration, prf, max_vel, mti=False, is_save=None, savename=
         savename (str, optional): If provided, the path to save the figure. Defaults to None.
     Usage:
         spectrogram(data, duration=duration, prf=prf, max_vel=max_vel, mti=True, is_save=True, savename="microdoppler_spectrogram.png")
+        N.B. Use "params['max_vel']" as max_vel
     """
     start_time = time.time()
 
