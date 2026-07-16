@@ -18,24 +18,22 @@ def stft(data, window, nfft, shift):
         np.ndarray: STFT of the input data.
     """
     n = (len(data) - window - 1) // shift
-    out1 = np.zeros((nfft, n), dtype=complex)
-
+    out = np.zeros((nfft, n), dtype=complex)
+    win = np.hanning(window)
     for i in range(n):
-        tmp1 = data[i * shift: i * shift + window].T
-        tmp2 = np.hanning(window)
-        tmp3 = tmp1 * tmp2
-        tmp = np.fft.fft(tmp3, n=nfft)#[nfft:]
-        out1[:, i] = tmp
-    return out1
+        segment = data[i * shift : i * shift + window] * win
+        out[:, i] = np.fft.fft(segment, n=nfft)
+    return out
 
 
-def plot_spectrogram(spect, duration, prf, savename=None):
+def plot_spectrogram(spect, duration, prf, max_vel, savename=None):
     """
     Plot and optionally save the spectrogram.
     Args:
         spect (np.ndarray): Spectrogram data to plot.
         duration (float): Duration of the signal in seconds.
         prf (float): Pulse repetition frequency in Hz.
+        max_vel (float): Maximum velocity in m/s.
         savename (str, optional): If provided, the path to save the figure. Defaults to None.
     """
     fig = plt.figure(frameon=True)
@@ -46,10 +44,12 @@ def plot_spectrogram(spect, duration, prf, savename=None):
 
     # gcf (with axes)
     im = plt.imshow(20 * np.log10((abs(spect) / maxval)), cmap='jet', norm=norm, aspect="auto",
-                    extent=[0, duration, -prf/2, prf/2]
+    #               extent=[0, duration, -prf/2, prf/2],
+                    extent=[0, duration, -max_vel, max_vel]
                     )
     plt.xlabel('Time (sec)')
-    plt.ylabel('Frequency (Hz)')
+    #plt.ylabel('Frequency (Hz)')
+    plt.ylabel('Velocity (m/s)')
     plt.title('Micro-Doppler Spectrogram')
     # plt.show()
 
@@ -64,16 +64,19 @@ def plot_spectrogram(spect, duration, prf, savename=None):
         plt.close()
 
 
-def spectrogram(data, duration, prf, mti=False, is_save=None, savename=None):
+def spectrogram(data, duration, prf, max_vel, mti=False, is_save=None, savename=None):
     """
     Generate and plot the spectrogram from radar data.
     Args:
         data (np.ndarray): Raw radar data.
         duration (float): Duration of the signal in seconds.
         prf (float): Pulse repetition frequency in Hz.
+        max_vel (float): Maximum velocity in m/s.
         mti (bool, optional): Whether to apply Moving Target Indication (MTI) filtering. Defaults to False.
         is_save (bool, optional): Whether to save the spectrogram. Defaults to None.
         savename (str, optional): If provided, the path to save the figure. Defaults to None.
+    Usage:
+        spectrogram(data, duration=duration, prf=prf, max_vel=max_vel, mti=True, is_save=True, savename="microdoppler_spectrogram.png")
     """
     start_time = time.time()
 
@@ -81,20 +84,31 @@ def spectrogram(data, duration, prf, mti=False, is_save=None, savename=None):
     data = np.transpose(data, (2, 1, 0))
     num_samples = data.shape[0]
     num_chirps = data.shape[1]*data.shape[2]
-    data = data.reshape((num_samples, num_chirps), order='F')
+    data = data.reshape((num_samples, num_chirps), order='F').astype(np.float64)
 
-    range_fft = np.fft.fft(data, 2*num_samples, axis=0)[num_samples:] / num_samples
-    range_fft -= np.expand_dims(np.mean(range_fft, 1), 1)
+    data = hilbert(data, axis=0)
+
+    range_fft = np.fft.fft(data, 2*num_samples, axis=0)[:num_samples] / num_samples
+    range_fft -= np.mean(range_fft, axis=1, keepdims=True)
 
     if mti:
         b, a = butter(1, 0.01, 'high', output='ba')
         rngpro = np.zeros_like(range_fft)
         for r in range(rngpro.shape[0]):
-            rngpro[r, :] = lfilter(b, a, range_fft[r, :])
+            rngpro[r, :] = lfilter(b, a, range_fft[r, :].real) + 1j * lfilter(b, a, range_fft[r, :].imag)
     else:
         rngpro = range_fft
 
-    rBin = np.arange(num_samples // 2, num_samples - 1)  # 20 30
+    energy = np.sum(np.abs(rngpro) ** 2, axis=1)
+    peak = int(np.argmax(energy))
+    range_bin_offset = 3 #3*2 bins around the peak
+    r0 = max(1, peak - range_bin_offset)
+    r1 = min(rngpro.shape[0], peak + range_bin_offset + 1)
+    rBin = np.arange(r0, r1)
+
+    #rBin = np.arange(1, num_samples//2 + 1) # 1...128
+    #rBin = np.arange(20, 31) # 20...30
+    
     nfft = 2 ** 10
     window = 256
     noverlap = 200
@@ -107,4 +121,4 @@ def spectrogram(data, duration, prf, mti=False, is_save=None, savename=None):
 
     print(f"Generated spectrogram in {time.time() - start_time:.2f} seconds")
 
-    plot_spectrogram(spect, duration, prf, savename=savename)
+    plot_spectrogram(spect, duration, prf, max_vel, savename=savename)
